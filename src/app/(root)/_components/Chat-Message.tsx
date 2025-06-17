@@ -57,7 +57,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           <div className="flex flex-wrap gap-3 mb-2">
             {files.map((file: any, index: number) => {
               const isBlob = file instanceof File || file instanceof Blob;
-
               const url = isBlob
                 ? URL.createObjectURL(file)
                 : typeof file === "string"
@@ -163,7 +162,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                     {children}
                   </a>
                 ),
-                code({ inline, className, children }: any) {
+                code({ inline, className, children, node }: any) {
                   const codeContent = String(children).trim();
                   const match = /language-(\w+)/.exec(className || "");
 
@@ -175,17 +174,20 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                     );
                   }
 
-                  const index = Math.random();
+                  const stableIndex =
+                    node?.position?.start?.offset || codeContent.length;
 
                   return (
                     <div className="relative group my-6">
                       <div className="absolute top-2 right-2 z-10">
-                        {copiedBlock === index ? (
+                        {copiedBlock === stableIndex ? (
                           <Check className="text-gray-300 h-4" />
                         ) : (
                           <CopyPlus
                             className="text-gray-300 h-4 cursor-pointer"
-                            onClick={() => handleCopyBlock(codeContent, index)}
+                            onClick={() =>
+                              handleCopyBlock(codeContent, stableIndex)
+                            }
                           />
                         )}
                       </div>
@@ -221,29 +223,27 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                 />
               )}
               <ThumbsUp
-              className={`h-5 cursor-pointer ${
-                feedback === "up"
-                  ? "fill-white text-white"
-                  : "text-gray-300"
-              }`}
-              onClick={() =>
-                setFeedback((prev) => (prev === "up" ? null : "up"))
-              }
-            />
-            <ThumbsDown
-              className={`h-5 cursor-pointer ${
-                feedback === "down"
-                  ? "fill-white text-white"
-                  : "text-gray-300"
-              }`}
-              onClick={() =>
-                setFeedback((prev) => (prev === "down" ? null : "down"))
-              }
-            />
-            <Share
-              className="h-5 cursor-pointer text-gray-300"
-              onClick={() => setShowShareModal(true)}
-            />
+                className={`h-5 cursor-pointer ${
+                  feedback === "up" ? "fill-white text-white" : "text-gray-300"
+                }`}
+                onClick={() =>
+                  setFeedback((prev) => (prev === "up" ? null : "up"))
+                }
+              />
+              <ThumbsDown
+                className={`h-5 cursor-pointer ${
+                  feedback === "down"
+                    ? "fill-white text-white"
+                    : "text-gray-300"
+                }`}
+                onClick={() =>
+                  setFeedback((prev) => (prev === "down" ? null : "down"))
+                }
+              />
+              <Share
+                className="h-5 cursor-pointer text-gray-300"
+                onClick={() => setShowShareModal(true)}
+              />
               <Recycle className="text-gray-300 cursor-pointer h-5" />
             </div>
           </div>
@@ -261,7 +261,6 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         />
       )}
 
-      {/* Share Modal */}
       {showShareModal && (
         <ChatShare setShowShareModal={setShowShareModal} />
       )}
