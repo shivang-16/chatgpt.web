@@ -35,6 +35,7 @@
     "lucide-react": "^0.429.0",
     "motion": "^12.4.10",
     "next": "14.2.6",
+    "pdf-parse": "^1.1.1",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
