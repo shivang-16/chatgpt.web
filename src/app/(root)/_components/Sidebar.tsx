@@ -60,8 +60,8 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`fixed md:sticky top-0 overflow-auto left-0 h-full z-50 bg-[#171717] border-r border-[#2f2f2f] transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? 'w-[260px]' : 'w-[48px] h-[48px] mt-2 bg-[#171717] rounded-2xl'}`}
+      className={`fixed md:sticky top-0 overflow-auto left-0 z-50 bg-[#171717] border-r border-[#2f2f2f] transition-all duration-300 ease-in-out
+        ${isSidebarOpen ? 'w-[260px] h-full' : 'w-[48px] h-[48px] mt-2 bg-[#171717] rounded-2xl'}`}
     >
       <div className={`h-full flex flex-col ${isSidebarOpen ? 'px-2' : 'px-1'}`}>
         {/* Header with logo and toggle button */}

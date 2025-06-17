@@ -9,9 +9,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 2. If NOT logged in and trying to access /chat/*, redirect to /login
+  // 2. If NOT logged in and trying to access /chat/*, redirect to /
   if (!token && path.startsWith("/chat")) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // 3. Allow all other requests
@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
 
 function getTokenFromStorage(request: NextRequest) {
   const token = request.cookies.get("token");
-  return token?.value; // Get cookie value correctly
+  return token?.value;
 }
 
 export const config = {
