@@ -1,10 +1,3 @@
-
-
-
-          
-Here's a README.md file for your ChatGPT web application project:
-
-```markdown:/Users/shivang/Desktop/chatgpt.web/README.md
 # ChatGPT Web Application
 
 A Next.js-based web application that mimics ChatGPT functionality with features like:
