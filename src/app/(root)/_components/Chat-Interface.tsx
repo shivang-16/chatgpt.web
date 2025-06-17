@@ -1,33 +1,58 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, Sparkle, Sun } from "lucide-react";
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { useChat } from "@ai-sdk/react";
 import ChatMessage from "./Chat-Message";
 import ChatInput from "./Chat-Input";
 import { geminiChat } from "@/actions/gemini_actions";
+import { getChatMessages, createChat, createChatMessage } from "@/actions/chat_actions"; // Import getChatMessages
+import { useAppSelector } from "@/redux/hooks";
 
 interface ChatInterfaceProps {
   showSidebar: boolean;
   onToggleSidebar: () => void;
+  chatId?: string; // Add chatId as an optional prop
 }
 
 export default function ChatInterface({
   showSidebar,
   onToggleSidebar,
+  chatId, // Destructure chatId
 }: ChatInterfaceProps) {
-  // const { messages, input, handleInputChange, handleSubmit, isLoading } =
-  //   useChat({
-  //     api: "/api/chat",
-  //   });
+  const router = useRouter(); // Initialize useRouter
+  const user = useAppSelector(state => state.user.user)
 
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [input, setInput] = useState<string>('')
-  const [messages, setMessages] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [input, setInput] = useState<string>('');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch messages when chatId changes
+  if(user) {
+    useEffect(() => {
+      const fetchMessages = async () => {
+        if (chatId) {
+          setIsLoading(true);
+          const response = await getChatMessages(chatId);
+          console.log(response, "hereis thei messge")
+          if (response.success && response.data) {
+            setMessages(response.data);
+            setHasStartedChat(true);
+          } else {
+            console.error("Failed to fetch chat messages:", response.error);
+          }
+          setIsLoading(false);
+        }
+      };
+      fetchMessages();
+    }, [chatId]);
+  }
+
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +61,7 @@ export default function ChatInterface({
     if (!input.trim() && files.length === 0) return;
   
     setHasStartedChat(true);
-  
+
     const userMessage = {
       id: Date.now().toString(),
       role: "user",
@@ -46,7 +71,9 @@ export default function ChatInterface({
 
     setMessages(prev => [...prev, userMessage]);
 
-    console.log(files, "here in interface")
+  
+
+    console.log(files, "here in interface");
 
     const data = {
       message: input,
@@ -76,6 +103,32 @@ export default function ChatInterface({
         });
       }
     }
+
+    let currentChatId = chatId;
+
+    
+    if (!currentChatId && user) {
+      // Create a new chat if no chatId exists
+      const chatName = input.substring(0, 50) || "New Chat"; // Use first 50 chars of message as chat name
+      console.log(chatName, "here is chat name")
+      const newChatResponse = await createChat(chatName);
+      if (newChatResponse.success && newChatResponse.data) {
+        currentChatId = newChatResponse.data._id as string;
+        await createChatMessage(currentChatId, input, 'user');
+        await createChatMessage(currentChatId, assistantMessage.content, 'assistant');
+
+        router.push(`/chat/${currentChatId}`); // Redirect to the new chat URL
+      } else {
+        console.error("Failed to create new chat:", newChatResponse.error);
+        setIsLoading(false);
+        return;
+      }
+    }
+    // // Save assistant message if user is logged in
+    // if (user && currentChatId) {
+    //   await createChatMessage(currentChatId, assistantMessage.content, 'assistant');
+    // }
+
   
     setInput("");
     setFiles([]);

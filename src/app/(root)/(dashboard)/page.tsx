@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Sidebar from "./_components/Sidebar"
-import ChatInterface from "./_components/Chat-Interface"
+import Sidebar from "../_components/Sidebar"
+import ChatInterface from "../_components/Chat-Interface"
 
 export default function Home() {
   const [showSidebar, setShowSidebar] = useState(true)

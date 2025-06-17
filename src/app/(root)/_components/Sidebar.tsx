@@ -1,26 +1,41 @@
+'use client'
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Settings, MessageSquarePlus, Search, Library, Sparkles, Bot, CreditCard, SidebarIcon } from "lucide-react"
 import Image from "next/image"
-
-const chatHistory = [
-  "Electricity Bill Subsidy Details",
-  "Intern Report Email Draft",
-  "Internship Report Summary",
-  "Should I start with this",
-  "New chat",
-  "Gemini API Chat UI",
-  "AI Agent Collaboration",
-  "Unique Elements in Array",
-  "Debounce Function Implementation",
-  "Pagination for Large Datasets",
-  "Hi Shivang Response",
-  "Overlay window during screen s...",
-  "AI Task Manager Clarifications",
-  "Mac Data Usage Tips",
-]
+import { useRouter, usePathname } from 'next/navigation';
+import { useAppSelector } from '@/redux/hooks';
+import { getChats } from '@/actions/chat_actions';
+import { useEffect, useState } from "react";
 
 export default function Sidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const user = useAppSelector(state => state.user.user);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      if (user) {
+        const response = await getChats();
+        if (response.success && response.data) {
+          setChatHistory(response.data);
+        } else {
+          console.error("Failed to fetch chats:", response.error);
+        }
+      }
+    };
+    fetchChats();
+  }, [user]);
+
+  const handleNewChat = () => {
+    router.push('/');
+  };
+
+  const handleChatClick = (chatId: string) => {
+    router.push(`/chat/${chatId}`);
+  };
+
   return (
     <div className="w-[260px] bg-[#171717] px-2 border-r border-[#2f2f2f] flex flex-col">
      <div className="flex mx-2 my-3 justify-between mb-6">
@@ -31,7 +46,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <div>
-      <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#2f2f2f] h-11 px-3">
+      <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#2f2f2f] h-11 px-3" onClick={handleNewChat}>
           <MessageSquarePlus className="w-4 h-4 mr-3" />
           New chat
         </Button>
@@ -39,17 +54,16 @@ export default function Sidebar() {
           <Search className="w-4 h-4 mr-3" />
           Search chats
         </Button>
-        <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#2f2f2f] h-10 px-3">
-          <Library className="w-4 h-4 mr-3" />
-          Library
-        </Button>
       </div>
 
       <div className="mt-4">
+        <a href="https://sora.chatgpt.com/explore" target="_blank">
         <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#2f2f2f] h-10 px-3">
           <Sparkles className="w-4 h-4 mr-3" />
           Sora
         </Button>
+        </a>
+        <a href=""></a>
         <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#2f2f2f] h-10 px-3">
           <Bot className="w-4 h-4 mr-3" />
           GPTs
@@ -61,13 +75,14 @@ export default function Sidebar() {
         <div className="text-xs text-[#8e8ea0] mb-2 px-3">Chats</div>
         <ScrollArea className="h-full">
           <div>
-            {chatHistory.map((chat, index) => (
+            {chatHistory.map((chat) => (
               <Button
-                key={index}
+                key={chat._id}
                 variant="ghost"
-                className="w-full justify-start text-white hover:bg-[#2f2f2f] h-10 px-3 text-sm font-normal truncate"
+                className={`w-full justify-start text-white hover:bg-[#2f2f2f] h-10 px-3 text-sm font-normal truncate ${pathname === `/chat/${chat._id}` ? 'bg-[#2f2f2f]' : ''}`}
+                onClick={() => handleChatClick(chat._id)}
               >
-                {chat}
+                {chat.heading}
               </Button>
             ))}
           </div>
