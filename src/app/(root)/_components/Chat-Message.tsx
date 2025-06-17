@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import type { Message } from "ai";
+import FilePreviewModal from "../_components/FilePreview"; // update path as needed
 
 interface ChatMessageProps {
   message: any;
@@ -24,6 +24,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   const files = message?.files;
   const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
   const [copiedMsg, setCopiedMsg] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+const [previewType, setPreviewType] = useState<"image" | "pdf" | null>(null);
+
+
 
   const handleCopyBlock = async (code: string, index: number) => {
     try {
@@ -50,21 +54,36 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       <div className={`${isUser ? "max-w-[55%]" : "max-w-full"}`}>
         {isUser && files && files.length > 0 && (
           <div className="flex flex-wrap gap-3 mb-2">
-            {files.map((file: File, index: number) => {
-              const url = URL.createObjectURL(file);
-              const isImage = file.type.startsWith("image/");
-              const isPDF = file.type === "application/pdf";
+            {files.map((file: any, index: number) => {
+             const isBlob = file instanceof File || file instanceof Blob;
+
+             const url = isBlob ? URL.createObjectURL(file) : typeof file === "string" ? file : "";
+             const name = isBlob ? (file as any).name : typeof file === "object" && file.name ? file.name : url.split("/").pop();
+             const extension = name?.split(".").pop()?.toLowerCase();
+             
+             const isImage =
+               (isBlob && file.type?.startsWith("image/")) ||
+               (!isBlob && extension && ["png", "jpg", "jpeg", "gif", "webp"].includes(extension));
+             
+             const isPDF =
+               (isBlob && file.type === "application/pdf") || (!isBlob && extension === "pdf");
 
               return (
-                <div key={index} className="relative w-16 h-16 rounded-xl overflow-hidden p-1 bg-[#2a2a2a]">
+                <div key={index}
+                 className="relative rounded-xl cursor-pointer overflow-hidden p-1 bg-[#2a2a2a]"
+                 onClick={() => {
+                  setPreviewUrl(url);
+                  setPreviewType(isImage ? "image" : isPDF ? "pdf" : null);
+                }}
+                 >
                   {isImage ? (
                     <img
                       src={url}
                       alt={file.name}
-                      className="object-cover w-full h-full rounded-md"
+                      className="object-cover w-16 h-16 rounded-md"
                     />
                   ) : isPDF ? (
-                    <div className="flex items-center gap-2 bg-[#2a2a2a] px-3 py-2 pr-8 rounded-xl border border-[#4a4a4a] max-w-[200px] relative">
+                    <div className="flex items-center gap-2 px-3 py-2 pr-8 rounded-xl max-w-[200px] relative">
                     <div className="bg-pink-600 p-2 rounded-md flex items-center justify-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -77,17 +96,17 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M12 4v16m8-8H4"
+                          d="M7 21h10a2 2 0 002-2V7.414a2 2 0 00-.586-1.414L14.172 2.586A2 2 0 0012.758 2H7a2 2 0 00-2 2v15a2 2 0 002 2z"
                         />
                       </svg>
                     </div>
                     <div className="text-white text-sm truncate max-w-[100px]">
-                      {file.name}
+                      {name}
                     </div>
                   </div>
                 ) : (
                   <div className="bg-[#2a2a2a] px-3 py-2 pr-8 rounded-lg border border-[#4a4a4a] max-w-[200px] text-white text-sm truncate relative">
-                    {file.name}
+                    {name}
                   </div>
                 )}
               </div>
@@ -200,6 +219,19 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
       </div>
+
+      {previewUrl && previewType && (
+  <FilePreviewModal
+    url={previewUrl}
+    type={previewType}
+    onClose={() => {
+      setPreviewUrl(null);
+      setPreviewType(null);
+    }}
+  />
+)}
+
     </div>
+
   );
 }

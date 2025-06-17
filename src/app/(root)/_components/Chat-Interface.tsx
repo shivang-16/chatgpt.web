@@ -80,7 +80,8 @@ export default function ChatInterface({
       files,
     };
   
-    const stream = await geminiChat(data);
+    const {fileUrls, stream} = await geminiChat(data);
+    console.log(fileUrls, "here ar file urls")
 
     const assistantMessage = {
       id: Date.now().toString(),
@@ -104,6 +105,12 @@ export default function ChatInterface({
       }
     }
 
+    if(user && chatId) {
+      await createChatMessage(chatId, input, 'user', fileUrls);
+      await createChatMessage(chatId, assistantMessage.content, 'assistant');
+
+    }
+
     let currentChatId = chatId;
 
     
@@ -114,7 +121,7 @@ export default function ChatInterface({
       const newChatResponse = await createChat(chatName);
       if (newChatResponse.success && newChatResponse.data) {
         currentChatId = newChatResponse.data._id as string;
-        await createChatMessage(currentChatId, input, 'user');
+        await createChatMessage(currentChatId, input, 'user', fileUrls);
         await createChatMessage(currentChatId, assistantMessage.content, 'assistant');
 
         router.push(`/chat/${currentChatId}`); // Redirect to the new chat URL

@@ -1,7 +1,10 @@
 export async function geminiChat(data: {
     message: string;
     files: File[];
-  }): Promise<AsyncGenerator<{ type: string; content: string; fileName?: string }>> {
+  }): Promise<{
+    stream: AsyncGenerator<{ type: string; content: string; fileName?: string }>;
+    fileUrls: string[];
+  }> {
     const formData = new FormData();
     formData.append("message", data.message);
     data.files.forEach((file) => {
@@ -20,6 +23,7 @@ export async function geminiChat(data: {
     const decoder = new TextDecoder();
     const reader = response.body.getReader();
     let buffer = "";
+    const fileUrls: string[] = [];
   
     async function* parseStream() {
       while (true) {
@@ -34,7 +38,13 @@ export async function geminiChat(data: {
           if (line.startsWith("data:")) {
             const jsonStr = line.slice(5).trim();
             try {
-              yield JSON.parse(jsonStr);
+              const payload = JSON.parse(jsonStr);
+  
+              if (payload.type === "text") {
+                yield { type: "text", content: payload.content };
+              } else if (payload.type === "done" && payload.fileUrls) {
+                fileUrls.push(...payload.fileUrls);
+              }
             } catch (err) {
               console.error("Failed to parse stream chunk", jsonStr, err);
             }
@@ -45,6 +55,9 @@ export async function geminiChat(data: {
       }
     }
   
-    return parseStream();
+    return {
+      stream: parseStream(),
+      fileUrls,
+    };
   }
   

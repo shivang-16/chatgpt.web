@@ -58,10 +58,10 @@ export async function getChats(): Promise<ApiResponse<Chat[]>> {
   return fetchApi<Chat[]>(`${API_BASE_URL}/api/chat/get`);
 }
 
-export async function createChatMessage(chatId: string, content: string, role: 'user' | 'assistant'): Promise<ApiResponse<Message>> {
+export async function createChatMessage(chatId: string, content: string, role: 'user' | 'assistant', fileUrls?: string[]): Promise<ApiResponse<Message>> {
   return fetchApi<Message>(`${API_BASE_URL}/api/chat/messages/create`, {
     method: 'POST',
-    body: JSON.stringify({ chatId, content, role }),
+    body: JSON.stringify({ chatId, content, role, fileUrls }),
   });
 }
 
