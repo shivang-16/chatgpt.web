@@ -136,6 +136,14 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
     </div>
   );
 
+const handleEdit = (content: string, files: File[]) => {
+  setInput(content);
+  setFiles(files);
+  setMessages(prev => prev.filter(m => m.content !== content));
+};
+
+
+
   return (
     <div className="flex-1 flex flex-col overflow-scroll">
       <ChatHeader user={user} chatId={chatId} />
@@ -170,7 +178,7 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
                 )}
 
                 {messages.map((message, index) => (
-                  <ChatMessage key={index} message={message} />
+                  <ChatMessage key={index} message={message} onEdit={handleEdit} />
                 ))}
 
                 {isLoading && messages.length > 0 && (

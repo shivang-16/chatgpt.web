@@ -15,7 +15,7 @@ interface ChatInputProps {
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
-  files: File[];
+  files: any[];
   setFiles: React.Dispatch<React.SetStateAction<File[]>>;
 }
 
@@ -56,9 +56,27 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {files.length > 0 && (
             <div className="flex flex-wrap gap-3 p-2 rounded-lg">
               {files.map((file, index) => {
-                const url = URL.createObjectURL(file);
-                const isImage = file.type.startsWith("image/");
-                const isPDF = file.type === "application/pdf";
+               const isBlob = file instanceof File || file instanceof Blob;
+               const url = isBlob
+                 ? URL.createObjectURL(file)
+                 : typeof file === "string"
+                 ? file
+                 : "";
+               const name = isBlob
+                 ? (file as any).name
+                 : typeof file === "object" && file.name
+                 ? file.name
+                 : url.split("/").pop();
+               const extension = name?.split(".").pop()?.toLowerCase();
+               const isImage =
+               (isBlob && file.type?.startsWith("image/")) ||
+               (!isBlob &&
+                 extension &&
+                 ["png", "jpg", "jpeg", "gif", "webp"].includes(extension));
+
+             const isPDF =
+               (isBlob && file.type === "application/pdf") ||
+               (!isBlob && extension === "pdf");
 
                 return (
                   <div key={index} className="relative">
@@ -74,7 +92,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       <div className="w-14 h-14">
                         <img
                           src={url}
-                          alt={file.name}
+                          alt={name}
                           className="object-cover w-full h-full rounded-md"
                         />
                       </div>
@@ -97,12 +115,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                           </svg>
                         </div>
                         <div className="text-white text-sm truncate max-w-[100px]">
-                          {file.name}
+                          {name}
                         </div>
                       </div>
                     ) : (
                       <div className="bg-[#2a2a2a] px-3 py-2 pr-8 rounded-lg border border-[#4a4a4a] max-w-[200px] text-white text-sm truncate relative">
-                        {file.name}
+                        {name}
                       </div>
                     )}
                   </div>

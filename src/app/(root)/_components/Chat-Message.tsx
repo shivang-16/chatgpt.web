@@ -18,9 +18,10 @@ import ChatShare from "./Chat-Share";
 
 interface ChatMessageProps {
   message: any;
+  onEdit: (content: string, files: any[]) => void;
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+export default function ChatMessage({ message, onEdit }: ChatMessageProps) {
   const isUser = message.role === "user";
   const files = message?.files;
   const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
@@ -48,6 +49,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     } catch (err) {
       console.error("Copy failed", err);
     }
+  };
+
+  const handleEditMessage = () => {
+    onEdit(message.content, message.files);
   };
 
   return (
@@ -140,7 +145,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                   className="text-gray-300 cursor-pointer h-5"
                 />
               )}
-              <Edit className="text-gray-300 cursor-pointer h-5" />
+              <Edit 
+                onClick={handleEditMessage}
+                className="text-gray-300 cursor-pointer h-5" 
+              />
             </div>
           </div>
         ) : (
