@@ -120,7 +120,7 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
       }
     }
 
-    if (user && currentChatId) {
+    if (user && currentChatId && !chatId) {
       await createChatMessage(currentChatId, input, 'user', fileUrls);
       await createChatMessage(currentChatId, assistantMessage.content, 'assistant');
     }
