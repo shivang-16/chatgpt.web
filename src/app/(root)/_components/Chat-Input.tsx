@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, Plus, Wrench, X } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
@@ -27,6 +27,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   setFiles,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const user = useAppSelector((state) => state.user.user);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -48,6 +49,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleInputChange(e);
+    autoResizeTextarea();
+  };
+
+  const autoResizeTextarea = () => {
+    if (textareaRef.current) {
+      const el = textareaRef.current;
+      const maxHeight = window.innerHeight * 0.25;
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+    }
+  };
+
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [input]);
+
   return (
     <>
       <form onSubmit={onSubmit} className="relative space-y-3">
@@ -56,27 +75,27 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {files.length > 0 && (
             <div className="flex flex-wrap gap-3 p-2 rounded-lg">
               {files.map((file, index) => {
-               const isBlob = file instanceof File || file instanceof Blob;
-               const url = isBlob
-                 ? URL.createObjectURL(file)
-                 : typeof file === "string"
-                 ? file
-                 : "";
-               const name = isBlob
-                 ? (file as any).name
-                 : typeof file === "object" && file.name
-                 ? file.name
-                 : url.split("/").pop();
-               const extension = name?.split(".").pop()?.toLowerCase();
-               const isImage =
-               (isBlob && file.type?.startsWith("image/")) ||
-               (!isBlob &&
-                 extension &&
-                 ["png", "jpg", "jpeg", "gif", "webp"].includes(extension));
+                const isBlob = file instanceof File || file instanceof Blob;
+                const url = isBlob
+                  ? URL.createObjectURL(file)
+                  : typeof file === "string"
+                  ? file
+                  : "";
+                const name = isBlob
+                  ? (file as any).name
+                  : typeof file === "object" && file.name
+                  ? file.name
+                  : url.split("/").pop();
+                const extension = name?.split(".").pop()?.toLowerCase();
+                const isImage =
+                  (isBlob && file.type?.startsWith("image/")) ||
+                  (!isBlob &&
+                    extension &&
+                    ["png", "jpg", "jpeg", "gif", "webp"].includes(extension));
 
-             const isPDF =
-               (isBlob && file.type === "application/pdf") ||
-               (!isBlob && extension === "pdf");
+                const isPDF =
+                  (isBlob && file.type === "application/pdf") ||
+                  (!isBlob && extension === "pdf");
 
                 return (
                   <div key={index} className="relative">
@@ -131,25 +150,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
           {/* Textarea */}
           <textarea
+            ref={textareaRef}
             value={input}
-            onChange={handleInputChange}
+            onChange={handleTextareaChange}
+            onInput={autoResizeTextarea}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 onSubmit(e as any);
               }
             }}
-            onPaste={(e) => {
-              e.preventDefault();
-              const pastedText = e.clipboardData.getData("text");
-              const newText = input + pastedText;
-              handleInputChange({ target: { value: newText } } as any);
-              const textarea = e.currentTarget;
-              textarea.style.height = "auto";
-              textarea.style.height = textarea.scrollHeight * 5 + "px";
-            }}
             placeholder="Ask anything"
             className="flex w-full px-3 py-2 bg-transparent text-white overflow-auto placeholder:text-[#8e8ea0] border-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-md leading-relaxed whitespace-pre-wrap break-words min-h-[50px]"
+            style={{ maxHeight: "25vh" }}
             rows={1}
           />
 

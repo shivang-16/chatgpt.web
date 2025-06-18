@@ -19,9 +19,10 @@ import ChatShare from "./Chat-Share";
 interface ChatMessageProps {
   message: any;
   onEdit: (content: string, files: any[]) => void;
+  onResend: (content: string, files: any[]) => void;
 }
 
-export default function ChatMessage({ message, onEdit }: ChatMessageProps) {
+export default function ChatMessage({ message, onEdit, onResend }: ChatMessageProps) {
   const isUser = message.role === "user";
   const files = message?.files;
   const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
@@ -53,6 +54,14 @@ export default function ChatMessage({ message, onEdit }: ChatMessageProps) {
 
   const handleEditMessage = () => {
     onEdit(message.content, message.files);
+  };
+
+  const handleResendMessage = () => {
+    console.log("resent clicked", message)
+    if (message.role === 'assistant') {
+      console.log(message, "here")
+      onResend(message.content, message.files);
+    }
   };
 
   return (
@@ -252,7 +261,10 @@ export default function ChatMessage({ message, onEdit }: ChatMessageProps) {
                 className="h-5 cursor-pointer text-gray-300"
                 onClick={() => setShowShareModal(true)}
               />
-              <Recycle className="text-gray-300 cursor-pointer h-5" />
+              <Recycle 
+                onClick={handleResendMessage}
+                className="text-gray-300 cursor-pointer h-5" 
+              />
             </div>
           </div>
         )}

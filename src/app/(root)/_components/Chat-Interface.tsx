@@ -142,6 +142,11 @@ const handleEdit = (content: string, files: File[]) => {
   setMessages(prev => prev.filter(m => m.content !== content));
 };
 
+const handleResend = (content: string, files: File[]) => {
+  setInput(content);
+  setFiles(files);
+  onSubmit({ preventDefault: () => {} } as React.FormEvent);
+};
 
 
   return (
@@ -178,7 +183,7 @@ const handleEdit = (content: string, files: File[]) => {
                 )}
 
                 {messages.map((message, index) => (
-                  <ChatMessage key={index} message={message} onEdit={handleEdit} />
+                  <ChatMessage key={index} message={message} onEdit={handleEdit}  onResend={handleResend}/>
                 ))}
 
                 {isLoading && messages.length > 0 && (
