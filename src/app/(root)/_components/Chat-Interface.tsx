@@ -79,7 +79,8 @@ export default function ChatInterface({ chatId }: ChatInterfaceProps) {
     const data = {
       message: input,
       files,
-      chatId: chatId
+      chatId: chatId,
+      userId: user?._id
     };
 
     const { fileUrls, stream } = await geminiChat(data);

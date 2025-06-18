@@ -1,7 +1,8 @@
 export async function geminiChat(data: {
     message: string;
     files: File[];
-    chatId?: string
+    chatId?: string,
+    userId?: string
   }): Promise<{
     stream: AsyncGenerator<{ type: string; content: string; fileName?: string }>;
     fileUrls: string[];
@@ -9,6 +10,7 @@ export async function geminiChat(data: {
     const formData = new FormData();
     formData.append("message", data.message);
     formData.append("chatId", data.chatId || "");
+    formData.append("userId", data.userId || "");
     data.files.forEach((file) => {
       formData.append("files", file); // Use same key for multiple files
     });
